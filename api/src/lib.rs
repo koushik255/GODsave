@@ -98,3 +98,32 @@ pub async fn save(sda: Save) -> Result<(), ServerFnError> {
     })?;
     Ok(())
 }
+
+#[server]
+pub async fn list_a_save() -> Result<Vec<Save>, ServerFnError> {
+    let saves = DB.with(|conn| {
+        let mut stmt = conn
+            .prepare("SELECT id, name, link FROM saves ORDER BY id")
+            .unwrap();
+        let save_iter = stmt
+            .query_map([], |row| {
+                Ok(Save {
+                    id: row.get(0)?,
+                    name: row.get(1)?,
+                    link: row.get(2)?,
+                })
+            })
+            .unwrap();
+
+        // Collect the results into a Vec<Save>
+        save_iter.map(|r| r.unwrap()).collect()
+    });
+
+    Ok(saves)
+}
+
+// todo-- add fetch functions from db then make new compoenent on the front end which is for 1 save
+// // make another compoeneent which loops over the amount of saves in the db and for each
+// save it puts a compoenent for 1 save
+// // this should not take long tbh
+//

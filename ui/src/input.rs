@@ -7,6 +7,16 @@ pub fn Input() -> Element {
     let mut enter = use_signal(|| "".to_string());
     let mut enter_link = use_signal(|| "".to_string());
 
+    let mut total_saves = use_resource(move || async move {
+        match api::list_a_save().await {
+            Ok(s) => Some(s),
+            Err(e) => {
+                println!("Error fetching saves: {:?}", e);
+                None
+            }
+        }
+    });
+
     let submit = move || {
         let process = input.read().clone();
         if !process.trim().is_empty() {
@@ -49,6 +59,7 @@ pub fn Input() -> Element {
             }
         });
     };
+
     rsx! {
         input {
             value: "{input}",
@@ -67,13 +78,25 @@ pub fn Input() -> Element {
                 enter.set(input.to_string());
                 enter_link.set(link.to_string());
                 send_to_both();
-
-
-
             },
             "Submit"
         }
 
         h1 { "{enter}  {enter_link}" }
+
+        {
+            if let Some(Some(saves)) = total_saves.read().as_ref() {
+                rsx! {
+                    p { "Total saves: {saves.len():?}" }
+                    ul {
+                        for save in saves {
+                            li { "{save:?}" }
+                        }
+                    }
+                }
+            } else {
+                rsx! { p { "Loading saves or an error occurred..." } }
+            }
+        }
     }
 }
