@@ -1,11 +1,11 @@
 use crate::Route;
 use dioxus::prelude::*;
-use ui::{Blud, Input};
+use ui::{Blud, Input, List};
 
 #[component]
 pub fn Shik() -> Element {
     rsx! {
-
+    List{}
      Blud{}
      Input{}
          // space question mark for helix:
